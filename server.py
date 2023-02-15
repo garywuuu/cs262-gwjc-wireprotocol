@@ -11,6 +11,8 @@ undelivered_messages = {}
 
 # do everything by username and address
 def threaded(user, addr):
+	msg = "Hello there"
+	user.send(msg.encode('ascii'))
 	username = ""
 	for k, v in clients.items():
 		if user == v:
@@ -34,11 +36,11 @@ def threaded(user, addr):
 			username = data_list[1]
 			print(username)
 			dupe = False
-			for u, info in clients.items():
-				if user == info:
-					msg = "User already exists."
-					user.send(msg.encode('ascii'))
-					dupe = True
+			# for u, info in clients.items():
+			# 	if user == info:
+			# 		msg = "User already exists."
+			# 		user.send(msg.encode('ascii'))
+			# 		dupe = True
 			if dupe == False:
 				clients[username] = user
 				print(username + " added to server!")
@@ -51,20 +53,26 @@ def threaded(user, addr):
 			print("Listed users")
 
 		elif task == "3":
-			message = "From" + clients[user] + data_list[2] 
-			message = message.encode('ascii')
+			if len(data_list) != 3:
+				msg = "Invalid Command"
+				user.send(msg.encode('ascii'))
+				return False
+			print("valid command")
 			receiver_username = data_list[1]
-			if receiver_username in clients.items():
+			message = "From " + username + ": "+ data_list[2] 
+			message = message.encode('ascii')
+			if receiver_username in clients.keys():
 				if receiver_username in active_users:
 					sendmessage(message, receiver_username)
+					print("sent message")
 				else:
 				#add to queue of unread messages
 					pass
+			else:
+				print("recipient not a user")
 
 		elif task == "4":
-			remove(user)
-			clients.pop(user)
-			active_users.pop(user)
+			remove(username)
 
 		else:
 			msg = "Invalid Command"
@@ -80,17 +88,15 @@ def sendmessage(message, receiver_username):
 
 
 def list_accounts(recipient):
-	if len(active_users) < 2:
-		users = "Users = " + ''.join(str(n) for n in active_users)
-	else:
-		users = "Users = "+''.join(str(n)+", " for n in active_users)
+	users = "Users = "+''.join(str(n)+" | " for n in active_users)
 	print(users)
 	recipient.send(users.encode('ascii'))
 
 
-def remove(connection):
-	if connection in clients:
-		del clients[connection]
+def remove(username):
+	if username in clients.keys():
+		clients.pop(username)
+		active_users.pop(username)
 
 
 def Main():
@@ -100,7 +106,7 @@ def Main():
 
 	# takes the first argument from command prompt as IP address
 	IP = "127.0.0.1"
-	port=5001
+	port=5000
 	# takes second argument from command prompt as port number
 
 	server.bind((IP, port))
