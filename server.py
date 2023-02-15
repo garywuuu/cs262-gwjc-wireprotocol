@@ -9,44 +9,54 @@ active_users = []
 
 undelivered_messages = {}
 
-def threaded(user):
-	if clients[user]:
-		active_users.append(clients[user])
-	else:
-		pass
+# do everything by username and address
+def threaded(user, addr):
+	username = ""
+	for k, v in clients.items():
+		if addr == v:
+			active_users.append(k)
+			username = k
+
+	print(addr)
 
 	while True:
 		data = user.recv(1024)
 		data_str = data.decode('ascii')
+
 		if not data:
 			print("No message")
 			break
 
 		data_list = data_str.split('|')	
+
 		task = data_list[0]
 		
 		if task == "1":
 			# checks to make sure not taken etc
 			username = data_list[1]
 			print(username)
-			if username not in clients.items():
-				clients[user] = data_list[1]
-				print(username + " added to server!")
-				msg = "Welcome to Chat262, " + username +"!"
-				user.send(msg.encode('ascii'))
-				active_users.append(username)
+			for u, ad in clients.items():
+				if username == u or addr == ad:
+					msg = "Username or IP already exists."
+					user.send(msg.encode('ascii'))
+				else:
+					clients[username] = addr
+					print(username + " added to server!")
+					msg = "Welcome to Chat262, " + username +"!"
+					user.send(msg.encode('ascii'))
+					active_users.append(username)
 
 		elif task == "2":
 			list_accounts(user)
-			print("listed users")
+			print("Listed users")
 
 		elif task == "3":
 			message = "From" + clients[user] + data_list[2] 
 			message = message.encode('ascii')
-			receiver = data_list[1]
-			if receiver in clients.items():
-				if receiver in active_users.items():
-					sendmessage(message, receiver)
+			receiver_username = data_list[1]
+			if receiver_username in clients.items():
+				if receiver_username in active_users:
+					sendmessage(message, receiver_username)
 				else:
 				#add to queue of unread messages
 					pass
@@ -62,13 +72,11 @@ def threaded(user):
 
 			
 
-def sendmessage(message, recipient):
+def sendmessage(message, receiver_username):
 	try:
-		recipient.send(message)
+		clients[receiver_username].send(message)
 	except:
-		recipient.close()
-		# if the link is broken, we remove the client
-		remove(recipient)
+		clients[receiver_username].close()
 
 
 def list_accounts(recipient):
@@ -105,12 +113,11 @@ def Main():
  
 		# establish connection with client
 		user, addr = server.accept()    
-		clients[user] = "" 
 		print (addr[0] + " connected")
 		print('Connected to :', addr[0], ':', addr[1])
 
 		# Start a new thread and return its identifier
-		start_new_thread(threaded, (user,))
+		start_new_thread(threaded, (user, addr))
 		
 	server.close()
 
