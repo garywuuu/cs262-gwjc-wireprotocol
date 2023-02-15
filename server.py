@@ -13,11 +13,9 @@ undelivered_messages = {}
 def threaded(user, addr):
 	username = ""
 	for k, v in clients.items():
-		if addr == v:
+		if user == v:
 			active_users.append(k)
 			username = k
-
-	print(addr)
 
 	while True:
 		data = user.recv(1024)
@@ -35,16 +33,18 @@ def threaded(user, addr):
 			# checks to make sure not taken etc
 			username = data_list[1]
 			print(username)
-			for u, ad in clients.items():
-				if username == u or addr == ad:
-					msg = "Username or IP already exists."
+			dupe = False
+			for u, info in clients.items():
+				if user == info:
+					msg = "User already exists."
 					user.send(msg.encode('ascii'))
-				else:
-					clients[username] = addr
-					print(username + " added to server!")
-					msg = "Welcome to Chat262, " + username +"!"
-					user.send(msg.encode('ascii'))
-					active_users.append(username)
+					dupe = True
+			if dupe == False:
+				clients[username] = user
+				print(username + " added to server!")
+				msg = "Welcome to Chat262, " + username +"!"
+				user.send(msg.encode('ascii'))
+				active_users.append(username)
 
 		elif task == "2":
 			list_accounts(user)
@@ -117,7 +117,7 @@ def Main():
 		print('Connected to :', addr[0], ':', addr[1])
 
 		# Start a new thread and return its identifier
-		start_new_thread(threaded, (user, addr))
+		start_new_thread(threaded, (user, addr[0]))
 		
 	server.close()
 
