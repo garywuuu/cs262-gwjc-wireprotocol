@@ -44,7 +44,6 @@ def threaded(user):
 	deliver_undelivered(username)
 	while True:
 		#each time a new thread is created, deliver the messages sent while user was offline
-
 		try:
 			data = (user.recv(1024)).decode('UTF-8')
 			if not data:
@@ -99,9 +98,11 @@ def check_operations(task, user, data_list, username):
 		remove(username)
 
 def deliver_undelivered(username):
+	print(len(undelivered_messages[username]))
 	for msg in undelivered_messages[username]:
 		clients[username].send(msg)
-		undelivered_messages.pop(msg)
+		undelivered_messages[username].remove(msg)
+		print("messaged and removed")
 
 
 def sendmessage(message, receiver_username):
