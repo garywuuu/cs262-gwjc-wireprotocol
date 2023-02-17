@@ -42,6 +42,7 @@ def threaded(user):
 		active_users.append(username)
 
 	deliver_undelivered(username)
+
 	while True:
 		#each time a new thread is created, deliver the messages sent while user was offline
 		try:
@@ -57,6 +58,7 @@ def threaded(user):
 
 		except:
 			user.close()
+			active_users.remove(username)
 			return False
 
 def check_operations(task, user, data_list, username):
@@ -76,33 +78,34 @@ def check_operations(task, user, data_list, username):
 			user.send(msg.encode('UTF-8'))
 			return False
 
-		print("valid command")
 		# user must specify who they want to send a message to
 		receiver_username = data_list[1]
-		message = ("From " + username + ": "+ data_list[2]).encode('UTF-8')
+		message = ("| From " + username + ": "+ data_list[2]).encode('UTF-8')
 		if receiver_username in clients.keys():
 			if receiver_username in active_users:
 				sendmessage(message, receiver_username)
+				sendmessage(("Message sent successfully!").encode("UTF-8"), username)
 				print("sent message")
 			else:
 				undelivered_messages[receiver_username].append(message)
+				sendmessage(("Message queued when user returns").encode("UTF-8"), username)
 				print("message_queued")
 				print(undelivered_messages[receiver_username])
 				# message = "message queued"
 				# user.send(message.encode('UTF-8'))
 		else:
-			print("recipient not a user")
+			msg = "Recipient is not a user in the network"
+			user.send(msg.encode('UTF-8'))
 
 	# Feature 4: removing user from network
 	elif task == "remove":
 		remove(username)
+		print("Removed " + username)
 
 def deliver_undelivered(username):
-	print(len(undelivered_messages[username]))
 	for msg in undelivered_messages[username]:
 		clients[username].send(msg)
-		undelivered_messages[username].remove(msg)
-		print("messaged and removed")
+	undelivered_messages[username].clear()
 
 
 def sendmessage(message, receiver_username):
@@ -113,16 +116,19 @@ def sendmessage(message, receiver_username):
 
 
 def list_accounts(recipient):
-	users = "Users = "+''.join(str(n)+" | " for n in active_users)
+	users = "Users: | "+''.join(str(n)+" | " for n in active_users)
 	print(users)
 	recipient.send(users.encode('UTF-8'))
 
 
 def remove(username):
 	if username in clients.keys():
-		clients.pop(username)
 		active_users.pop(username)
 		clients[username].close()
+		clients.remove(username)
+	else:
+		pass
+
 
 
 def Main():
@@ -149,7 +155,6 @@ def Main():
 		print('Connected to :', addr[0], ':', addr[1])
 		# Start a new thread and return its identifier
 		start_new_thread(threaded, (user,))
-		
 	server.close()
 
 if __name__=='__main__':
