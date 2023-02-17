@@ -58,17 +58,24 @@ def threaded(user):
 
 		except:
 			user.close()
-			active_users.remove(username)
 			return False
 
 def check_operations(task, user, data_list, username):
 	# Feature 2: listing all accounts
+
 	if task == "list":
-		try:
-			list_accounts(user)
-			print("Listed users")
-		except:
-			print("Error in listing accounts")
+		if len(data_list) != 2:
+			msg = "Invalid Command"
+			user.send(msg.encode('UTF-8'))
+			return False
+		else:
+			action = data_list[1]
+			if action == "all" or action == "active":
+				list_accounts(user, action)
+				print("listed")
+			else:
+				msg = "Invalid Command"
+				user.send(msg.encode('UTF-8'))
 
 	# Feature 3: sending a message
 	elif task == "send":
@@ -99,7 +106,7 @@ def check_operations(task, user, data_list, username):
 
 	# Feature 4: removing user from network
 	elif task == "remove":
-		remove(username)
+		remove_user(username, user)
 		print("Removed " + username)
 
 def deliver_undelivered(username):
@@ -115,19 +122,24 @@ def sendmessage(message, receiver_username):
 		clients[receiver_username].close()
 
 
-def list_accounts(recipient):
-	users = "Users: | "+''.join(str(n)+" | " for n in active_users)
-	print(users)
-	recipient.send(users.encode('UTF-8'))
-
-
-def remove(username):
-	if username in clients.keys():
-		active_users.pop(username)
-		clients[username].close()
-		clients.remove(username)
+def list_accounts(recipient, s):
+	if s == "active":
+		users = "Users: | "+''.join(str(n)+" | " for n in active_users)
+		recipient.send(users.encode('UTF-8'))
 	else:
-		pass
+		users = "Users: | "+''.join(str(n)+" | " for n in clients.keys())
+		recipient.send(users.encode('UTF-8'))
+
+def remove_user(username, user):
+	print("got here")
+	del clients[username]
+	print("got here 1")
+	active_users.remove(username)
+	print("got here 2")
+	user.close()
+	print("got here 3")
+	return False
+
 
 
 
