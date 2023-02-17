@@ -16,12 +16,12 @@ def Main():
 		# message received from server
 		# ask the client whether he wants to continue
 		ans = input('\nEnter your request:')
-		# if ans == '':
-		# 	ans2 = input('\nDo you want to continue(y/n) :')
-		# 	if ans2 =='y':
-		# 		continue
-		# 	else:
-		# 		break
+		if ans == 'Quit':
+			ans2 = input('\nDo you want to exit?(y/n) :')
+			if ans2 =='y':
+				continue
+			else:
+				break
 		server.send(ans.encode('ascii'))
 		data = server.recv(1024)
 		# print the received message
