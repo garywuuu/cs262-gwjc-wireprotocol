@@ -4,124 +4,154 @@ import sys
 
 from _thread import *
 
-# map usernames to IP info
+# Track all users who have created accounts and map usernames to IP info
 clients = {}
 
-#list of active users by username -> ie john, jerry, jack
+# List of active users by username -> ie john, jerry, jack
+# Used to display active users and for detecting when users are online
 active_users = []
 
-# map username to list of undelivered messages
+# Dictionary mapping username to corresponding list of undelivered messages
 undelivered_messages = {}
 
-# do everything by user info 
+# For each user, create thread
 def threaded(user):
-	msg = "What's your username?"
-	user.send(msg.encode('UTF-8'))
+	# At the start of the session, track username 
+	# Helpful since our data structures use username as keys
+	user.send(("What's your username?").encode('UTF-8'))
 	username = (user.recv(1024)).decode('UTF-8')
 
-	# checks to make sure not taken etc
-	dupe = False
-	if  user in clients.values():
-		msg = "User already exists, create new account."
-		user.send(msg.encode('UTF-8'))
-		dupe = True
+	# Duplicate bool tracks whether multiple IP's are trying to use the same account/username
+	duplicate = False
+	if username in active_users:
+		duplicate = True
+		# While loop that insists on having only one IP access a given account at a time
+		while duplicate == True:
+			user.send((username + " is already logged in. Choose a different account: what's your username?").encode('UTF-8'))
+			# Get new username and continue only if it's not currently being used
+			username = (user.recv(1024)).decode('UTF-8')
+			if username not in active_users:
+				duplicate = False
+
+	# Logic for when a user is logging back into an account they previously made
 	if username in clients.keys():
-		clients[username] = user
+		# Update the IP information so that new messages are sent to the right place
+		clients[username] = user; active_users.append(username)
 		print(username + " added to server!")
-		msg = "Welcome to Chat262, " + username +"!"
-		user.send(msg.encode('UTF-8'))
+		# Nice Greeting
+		user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
+		# Since user is logging back in, we consider them active again
+
+	# Feature 1: Creating an account with supplied username
+	else:
+		# Set IP info, initialized undelivered messages list for user, send a greeting, and add to active users. 
+		clients[username] = user; undelivered_messages[username] = []
+		print(username + " added to server!")
+		user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
 		active_users.append(username)
 
-	# new account
-	elif dupe == False:
-		clients[username] = user
-		undelivered_messages[username] = []
-		print(username + " added to server!")
-		msg = "Welcome to Chat262, " + username +"!"
-		user.send(msg.encode('UTF-8'))
-		active_users.append(username)
-
+	# Deliver messages sent to user when they were offline. This is done only when first logging back in and not
+	# during following while loop since they will receive messages normally while signed in and active
 	deliver_undelivered(username)
 
+	
+	# While user is active, allow them to send/receive messages and call commands
 	while True:
-		#each time a new thread is created, deliver the messages sent while user was offline
 		try:
 			data = (user.recv(1024)).decode('UTF-8')
+
+			# Track for when user has disconnected from socket, meaning no longer active. Close connection
 			if not data:
-				active_users.remove(username)
-				user.close()
+				active_users.remove(username); user.close()
 				print(username + " Disconnected")
-			data_list = data.split('|')	
-			task = data_list[0]
 			
+			# Split up message into proper commands
+			# Commands are written by the user in the form of Operation|Recipient(optional)|Value
+			data_list = data.split('|'); task = data_list[0]
+			
+			# Abstracting away logic for each command with this function
 			check_operations(task, user, data_list, username)
 
-		except:
-			user.close()
-			return False
+		except error as e:
+			# Catch errors
+			user.close(); print(e); return False
+			
 
+# Abstraction Function
 def check_operations(task, user, data_list, username):
-	# Feature 2: listing all accounts
-
+	# Feature 2: Listing Accounts on the Network
+	# Requirements: user must command "list|all" or "list|active" to show all or just active users
 	if task == "list":
+		# Invalid Command
 		if len(data_list) != 2:
-			msg = "Invalid Command"
-			user.send(msg.encode('UTF-8'))
+			user.send(("Invalid Command - use list|all or list|active").encode('UTF-8'))
 			return False
+
+		# Valid Command
 		else:
 			action = data_list[1]
 			if action == "all" or action == "active":
-				list_accounts(user, action)
-				print("listed")
+				# call abstraction function
+				list_accounts(user, action); print("listed")
 			else:
-				msg = "Invalid Command"
-				user.send(msg.encode('UTF-8'))
+				user.send(("Invalid Command - use list|all or list|active").encode('UTF-8'))
 
-	# Feature 3: sending a message
+	# Feature 3: Active user can send a message to recipient
+	# Requirements: user must follow the structure "send|recipient|message"
 	elif task == "send":
-		# quick check to see valid format
+		# Check valid command structure
 		if len(data_list) != 3:
-			msg = "Invalid Command"
-			user.send(msg.encode('UTF-8'))
+			user.send(("Invalid command - send|recipient|message").encode('UTF-8'))
 			return False
 
-		# user must specify who they want to send a message to
+		# User must specify message receiver
 		receiver_username = data_list[1]
-		message = ("| From " + username + ": "+ data_list[2]).encode('UTF-8')
+
+		# Logic if receiver has an account
 		if receiver_username in clients.keys():
+			# Build message
+			message = ("| From " + username + ": "+ data_list[2]).encode('UTF-8')
+			# Send immediately if recipient is active
 			if receiver_username in active_users:
-				sendmessage(message, receiver_username)
-				sendmessage(("Message sent successfully!").encode("UTF-8"), username)
-				print("sent message")
+				sendmessage(message, username, receiver_username)
+
+			# Queue message in undelivered_messages if recipient offline
 			else:
 				undelivered_messages[receiver_username].append(message)
 				sendmessage(("Message queued when user returns").encode("UTF-8"), username)
-				print("message_queued")
-				print(undelivered_messages[receiver_username])
-				# message = "message queued"
-				# user.send(message.encode('UTF-8'))
+				print("Message queued")
+
+		# Recipient does not exist
 		else:
-			msg = "Recipient is not a user in the network"
-			user.send(msg.encode('UTF-8'))
+			user.send(("Recipient is not a user in the network").encode('UTF-8'))
 
 	# Feature 4: removing user from network
+	# Specifications: user can only remove themselves from the network. As such, we don't need to worry about
+	# receiving undelivered messages since they received them upon signing in already. 
 	elif task == "remove":
-		remove_user(username, user)
-		print("Removed " + username)
+		remove_user(username, user); print("Removed " + username + " from network.")
 
+# Logic for delivering undelivered messages to user who signed back in
 def deliver_undelivered(username):
+	# Loop through messages and send. Clear list when done. 
 	for msg in undelivered_messages[username]:
 		clients[username].send(msg)
 	undelivered_messages[username].clear()
 
-
-def sendmessage(message, receiver_username):
+# Logic for sending a message
+def sendmessage(message, username, receiver_username):
 	try:
+		# Convenient since user provides a username, so we can just send to corresponding dictionary value
 		clients[receiver_username].send(message)
+		clients[username].send(("Message sent successfully!").encode("UTF-8"))
+		print(username + " sent a message to " + receiver_username)
+	# Handle exception
 	except:
-		clients[receiver_username].close()
+		("Message sent successfully!").encode("UTF-8")
+		clients[username].send(("Failed to send.").encode("UTF-8"))
+		print(username + "'s message to " + receiver_username + " failed to send.")
 
-
+# Logic for listing all or just active accounts
 def list_accounts(recipient, s):
 	if s == "active":
 		users = "Users: | "+''.join(str(n)+" | " for n in active_users)
@@ -130,42 +160,32 @@ def list_accounts(recipient, s):
 		users = "Users: | "+''.join(str(n)+" | " for n in clients.keys())
 		recipient.send(users.encode('UTF-8'))
 
+# Logic for removing user from network
 def remove_user(username, user):
-	print("got here")
 	del clients[username]
-	print("got here 1")
 	active_users.remove(username)
-	print("got here 2")
 	user.close()
-	print("got here 3")
 	return False
 
-
-
-
+# Main function
 def Main():
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-
-	# takes the first argument from command prompt as IP address
 	IP = "127.0.0.1"
-	port=5001
-	# takes second argument from command prompt as port number
+	port=5000
 
 	server.bind((IP, port))
 
 	server.listen(100)
 	print("Listening on port " + str(port))
-	print(IP) 
 	
 	while True:
- 
-		# establish connection with client
+		# Each new user connecting to server
 		user, addr = server.accept() 
 		print (addr[0] + " connected")	
 		print('Connected to :', addr[0], ':', addr[1])
-		# Start a new thread and return its identifier
+		# Start new thread
 		start_new_thread(threaded, (user,))
 	server.close()
 
