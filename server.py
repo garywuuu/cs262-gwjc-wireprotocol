@@ -72,9 +72,9 @@ def threaded(user):
 			# Abstracting away logic for each command with this function
 			check_operations(task, user, data_list, username)
 
-		except error as e:
+		except:
 			# Catch errors
-			user.close(); print(e); return False
+			user.close(); return False
 			
 
 # Abstraction Function
@@ -118,7 +118,7 @@ def check_operations(task, user, data_list, username):
 			# Queue message in undelivered_messages if recipient offline
 			else:
 				undelivered_messages[receiver_username].append(message)
-				sendmessage(("Message queued when user returns").encode("UTF-8"), username)
+				sendmessage(("Message queued when user returns").encode("UTF-8"), username, receiver_username)
 				print("Message queued")
 
 		# Recipient does not exist
@@ -140,16 +140,16 @@ def deliver_undelivered(username):
 
 # Logic for sending a message
 def sendmessage(message, username, receiver_username):
+	# Try sending message to recipeint
 	try:
-		# Convenient since user provides a username, so we can just send to corresponding dictionary value
 		clients[receiver_username].send(message)
 		clients[username].send(("Message sent successfully!").encode("UTF-8"))
 		print(username + " sent a message to " + receiver_username)
-	# Handle exception
 	except:
-		("Message sent successfully!").encode("UTF-8")
-		clients[username].send(("Failed to send.").encode("UTF-8"))
-		print(username + "'s message to " + receiver_username + " failed to send.")
+		clients[receiver_username].close()
+
+
+
 
 # Logic for listing all or just active accounts
 def list_accounts(recipient, s):
@@ -162,6 +162,8 @@ def list_accounts(recipient, s):
 
 # Logic for removing user from network
 def remove_user(username, user):
+	# Since users can only remove themselves from network, they will have already seen previously undelivered messages
+	# after logging in before removing their account. 
 	del clients[username]
 	active_users.remove(username)
 	user.close()
@@ -174,9 +176,7 @@ def Main():
 
 	IP = "127.0.0.1"
 	port=5000
-
 	server.bind((IP, port))
-
 	server.listen(100)
 	print("Listening on port " + str(port))
 	
