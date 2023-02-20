@@ -1,0 +1,20 @@
+syntax = "proto3"; // the version at the time of writing
+
+package grpc;
+
+message Empty {}
+
+// I called it Note because message Message sounds complicated
+message Note { // this is the actual message that the server is receiving and sends to all the other users in the 'room'
+    string name = 1; // name of the person who wrote the message
+    string message = 2; // the actual message
+}
+
+service ChatServer {
+    // This bi-directional stream makes it possible to send and receive Notes between 2 persons
+    rpc ChatStream (Empty) returns (stream Note); // the call which is streaming (open connection)
+    rpc SendNote (Note) returns (Empty);
+}
+// Accepts a stream of RouteNotes sent while a route is being traversed,
+// while receiving other RouteNotes (e.g. from other users).
+// rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}

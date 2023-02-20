@@ -1,0 +1,30 @@
+syntax = "proto3"; // the version at the time of writing
+
+package grpc;
+
+message Empty {}
+
+message Message {
+    oneof signup {
+       string name = 1;
+       int32 serial_number = 2;
+    }
+    oneof login {
+        string name = 1;
+        int32 serial_number = 2;
+     }
+    oneof login_req {
+        string name = 1;
+        int32 serial_number = 2;
+    }
+    oneof login_req {
+        string name = 1;
+        int32 serial_number = 2;
+    }
+  }
+
+service ChatServer {
+    // This bi-directional stream makes it possible to send and receive Notes between 2 persons
+    rpc ChatStream (Empty) returns (stream Note); // pass userid instead of empty
+    rpc SendNote (Note) returns (Empty);
+}
