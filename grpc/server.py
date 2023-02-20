@@ -63,17 +63,3 @@ if __name__ == '__main__':
     # from the server won't continue to work and stop the server
     while True:
         time.sleep(64 * 64 * 100)
-
-# def serve():
-#     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-#     rpc.add_ChatServerServicer_to_server(
-#         ChatServer(), server)
-#     print('Starting server. Listening...')
-#     server.add_insecure_port('[::]:11912')
-#     server.start()
-#     server.wait_for_termination()
-
-
-# if __name__ == '__main__':
-#     logging.basicConfig()
-#     serve()

@@ -4,7 +4,7 @@ package grpc;
 
 message Empty {}
 
-message Message {
+message Note {
     oneof signup {
        string name = 1;
        int32 serial_number = 2;
@@ -13,11 +13,15 @@ message Message {
         string name = 1;
         int32 serial_number = 2;
      }
-    oneof login_req {
+    oneof sendMessage {
         string name = 1;
         int32 serial_number = 2;
     }
-    oneof login_req {
+    oneof listAccounts {
+        string name = 1;
+        int32 serial_number = 2;
+    }
+    oneof deleteAccount {
         string name = 1;
         int32 serial_number = 2;
     }
