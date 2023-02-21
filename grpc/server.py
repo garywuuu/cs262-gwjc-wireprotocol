@@ -12,6 +12,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
     def __init__(self):
         # List with all the chat history
         self.chats = [] # need to edit so you have multiple chat lists
+        self.clients = {}
 
     # The stream which will be used to send new messages to clients
     def ChatStream(self, request_iterator, context):
@@ -32,7 +33,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 lastindex += 1
                 yield n # look at yield = return
 
-    def SendNote(self, request: chat.Note, context):
+    def SendMessage(self, request: chat.Message, context):
         """
         This method is called when a clients sends a Note to the server.
 
@@ -40,27 +41,72 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         :param context:
         :return:
         """
-        if request.HasField("sendMessage"):
-            # this is only for the server console
-            print("[{}] {}".format(request.sendMessage.username, request.sendMessage.message))
-            # Add it to the chat history
-            self.chats.append(request)
-            return chat.Empty()  # something needs to be returned required by protobuf language, we just return empty msg
+        print("[{}] {}".format(request.username, request.message))
+        self.chats.append(request)
+        return chat.Empty()  
+    
+    def Signup(self, request: chat.SignupRequest, context):
+        n = chat.SignupReply()
+        username = request.username
+        if username in self.clients.keys():
+            n.success = False
+            n.error = "Username already exists."
+            print("Signup from {} failed: User already exists.".format(username))
+        else:
+            n.success = True
+            self.clients[username] = {"active": True, "queue": []}
+            print("New user {} has arrived!".format(username))
+        return n
+
+    def Login(self, request: chat.LoginRequest, context):
+        n = chat.LoginReply()
+        username = request.username
+        # check if user exists
+        if username not in self.clients.keys():
+            n.success = False
+            n.error = "No existing user found."
+            print("Nonexistent user login request from {}".format(username))
+        else:    
+            # check if duplicate active user
+            if self.clients[username]["active"]:
+                n.success = False
+                n.error = "You are already logged in elsewhere."
+                print("Duplicate user login request from {}.".format(username))
+            else:
+                n.success = True
+                self.clients[username]["active"] = True
+                # ADD FLUSHING QUEUED MESSAGES
+        return n
+
+    def Logout(self, request: chat.LogoutRequest, context):
+        n = chat.LogoutReply()
+        username = request.username
+        if username not in self.clients.keys():
+            n.success = False
+            n.error = "No existing user found."
+            print("Nonexistent user logout request from {}".format(username))
+        else:
+            self.clients[username]["active"] = False
+            n.success = True
+            print("{} left the chat.".format(username))
+        return n
+
+    def List(self, request: chat.ListRequest, context):
+        n = chat.ListReply()
+        for user in self.clients.keys():
+            n.users.append(user)
+        print("Accounts listed.")
+        n.success = True
+        return n
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 
 if __name__ == '__main__':
-    port = 11912  # a random port for the server to run on
-    # the workers is like the amount of threads that can be opened at the same time, when there are 10 clients connected
-    # then no more clients able to connect to the server.
+    port = 11912 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))  # create a gRPC server
     rpc.add_ChatServerServicer_to_server(ChatServer(), server)  # register the server to gRPC
-    # gRPC basically manages all the threading and server responding logic, which is perfect!
     print('Starting server. Listening...')
     server.add_insecure_port('[::]:' + str(port))
     server.start()
-    # Server starts in background (in another thread) so keep waiting
-    # if we don't wait here the main thread will end, which will end all the child threads, and thus the threads
-    # from the server won't continue to work and stop the server
     while True:
         time.sleep(64 * 64 * 100)

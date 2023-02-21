@@ -4,34 +4,55 @@ package grpc;
 
 message Empty {}
 
-message Login {
-    string username = 1;
-}
-
-message SendMessage {
+message Message {
     string username = 1;
     string recipient = 2;
     string message = 3;
 }
-message List {
-    string search = 4;
-}
 
-message Delete {
+message SignupRequest {
     string username = 1;
 }
 
-message Note {
-    oneof note {
-        Login login = 1;
-        SendMessage sendMessage = 2;
-        List list = 3;
-        Delete delete = 4;
-    }
+message SignupReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message LoginRequest {
+    string username = 1;
+}
+
+message LoginReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message LogoutRequest {
+    string username = 1;
+}
+
+message LogoutReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message ListRequest {
+    // implement regex WILDCARd here ***
+}
+
+message ListReply {
+    bool success = 1;
+    string error = 2;
+    repeated string users = 3;
 }
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
-    rpc ChatStream (Empty) returns (stream Note); // pass userid instead of empty
-    rpc SendNote (Note) returns (Empty);
+    rpc ChatStream (Empty) returns (stream Message); 
+    rpc SendMessage (Message) returns (Empty);
+    rpc Signup (SignupRequest) returns (SignupReply);
+    rpc Login (LoginRequest) returns (LoginReply);
+    rpc Logout (LogoutRequest) returns (LogoutReply);
+    rpc List (ListRequest) returns (ListReply);
 }
