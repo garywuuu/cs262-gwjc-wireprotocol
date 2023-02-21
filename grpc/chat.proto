@@ -4,8 +4,23 @@ package grpc;
 
 message Empty {}
 
-message Message {
-    string username = 1;
+message MessageRequest {
+    string sender = 1;
+    string recipient = 2;
+    string message = 3;
+}
+
+message MessageReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message GetRequest {
+    string recipient = 1;
+}
+
+message GetReply {
+    string sender = 1;
     string recipient = 2;
     string message = 3;
 }
@@ -49,8 +64,9 @@ message ListReply {
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
-    rpc ChatStream (Empty) returns (stream Message); 
-    rpc SendMessage (Message) returns (Empty);
+    rpc ChatStream (GetRequest) returns (stream MessageRequest); 
+    // change from MessageRequest to Get *** ??
+    rpc SendMessage (MessageRequest) returns (MessageReply);
     rpc Signup (SignupRequest) returns (SignupReply);
     rpc Login (LoginRequest) returns (LoginReply);
     rpc Logout (LogoutRequest) returns (LogoutReply);
