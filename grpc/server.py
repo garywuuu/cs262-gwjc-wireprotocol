@@ -4,8 +4,8 @@ import grpc
 import time
 import logging
 
-import ex_chat_pb2 as chat
-import ex_chat_pb2_grpc as rpc
+import chat_pb2 as chat
+import chat_pb2_grpc as rpc
 
 class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf rpc file which is generated
 
@@ -40,11 +40,12 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         :param context:
         :return:
         """
-        # this is only for the server console
-        print("[{}] {}".format(request.name, request.message))
-        # Add it to the chat history
-        self.chats.append(request)
-        return chat.Empty()  # something needs to be returned required by protobuf language, we just return empty msg
+        if request.HasField("sendMessage"):
+            # this is only for the server console
+            print("[{}] {}".format(request.sendMessage.username, request.sendMessage.message))
+            # Add it to the chat history
+            self.chats.append(request)
+            return chat.Empty()  # something needs to be returned required by protobuf language, we just return empty msg
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 

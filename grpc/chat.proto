@@ -4,28 +4,31 @@ package grpc;
 
 message Empty {}
 
+message Login {
+    string username = 1;
+}
+
+message SendMessage {
+    string username = 1;
+    string recipient = 2;
+    string message = 3;
+}
+message List {
+    string search = 4;
+}
+
+message Delete {
+    string username = 1;
+}
+
 message Note {
-    oneof signup {
-       string name = 1;
-       int32 serial_number = 2;
+    oneof note {
+        Login login = 1;
+        SendMessage sendMessage = 2;
+        List list = 3;
+        Delete delete = 4;
     }
-    oneof login {
-        string name = 1;
-        int32 serial_number = 2;
-     }
-    oneof sendMessage {
-        string name = 1;
-        int32 serial_number = 2;
-    }
-    oneof listAccounts {
-        string name = 1;
-        int32 serial_number = 2;
-    }
-    oneof deleteAccount {
-        string name = 1;
-        int32 serial_number = 2;
-    }
-  }
+}
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons

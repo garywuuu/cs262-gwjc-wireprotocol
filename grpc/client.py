@@ -5,8 +5,8 @@ from tkinter import simpledialog
 
 import grpc
 
-import ex_chat_pb2 as chat
-import ex_chat_pb2_grpc as rpc
+import chat_pb2 as chat
+import chat_pb2_grpc as rpc
 
 address = 'localhost'
 port = 11912
@@ -38,9 +38,9 @@ class Client:
         """
         if message != '':
             n = chat.Note()  # create protobug message (called Note)
-            n.name = self.username  # set the username
-            n.message = message  # set the actual message of the note
-            print("S[{}] {}".format(n.name, n.message))  # debugging statement
+            n.sendMessage.username = self.username  # set the username
+            n.sendMessage.message = message  # set the actual message of the note
+            print("S[{}] {}".format(n.sendMessage.username, n.sendMessage.message))  # debugging statement
             self.conn.SendNote(n)  # send the Note to the server
 
 if __name__ == '__main__':
