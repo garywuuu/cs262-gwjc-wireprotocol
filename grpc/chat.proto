@@ -15,33 +15,33 @@ message SignupRequest {
 }
 
 message SignupReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message LoginRequest {
     string username = 1;
 }
 
-message Login {
+message LoginReply {
+    bool success = 1;
+    string error = 2;
+}
+
+message LogoutRequest {
     string username = 1;
 }
 
-message List {
-    string search = 4;
+message LogoutReply {
+    bool success = 1;
+    string error = 2;
 }
-
-message Delete {
-    string username = 1;
-}
-
-// message Note {
-//     oneof note {
-//         Login login = 1;
-//         SendMessage sendMessage = 2;
-//         List list = 3;
-//         Delete delete = 4;
-//     }
-// }
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
     rpc ChatStream (Empty) returns (stream Message); 
     rpc SendMessage (Message) returns (Empty);
     rpc Signup (SignupRequest) returns (SignupReply);
+    rpc Login (LoginRequest) returns (LoginReply);
+    rpc Logout (LogoutRequest) returns (LogoutReply);
 }

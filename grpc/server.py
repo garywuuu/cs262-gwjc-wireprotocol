@@ -46,28 +46,60 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         return chat.Empty()  
     
     def Signup(self, request: chat.SignupRequest, context):
-        self.clients[request.username] = {"active": True, "queue": []}
-        print("New user {} has arrived!".format(request.username))
         n = chat.SignupReply()
-        n.username = request.username
+        username = request.username
+        if username in self.clients.keys():
+            n.success = False
+            n.error = "Username already exists."
+            print("Signup from {} failed: User already exists.".format(username))
+        else:
+            n.success = True
+            self.clients[username] = {"active": True, "queue": []}
+            print("New user {} has arrived!".format(username))
         return n
 
+    def Login(self, request: chat.LoginRequest, context):
+        n = chat.LoginReply()
+        username = request.username
+        # check if user exists
+        if username not in self.clients.keys():
+            n.success = False
+            n.error = "No existing user found."
+            print("Nonexistent user login request from {}".format(username))
+        else:    
+            # check if duplicate active user
+            if self.clients[username]["active"]:
+                n.success = False
+                n.error = "You are already logged in elsewhere."
+                print("Duplicate user login request from {}.".format(username))
+            else:
+                n.success = True
+                self.clients[username]["active"] = True
+                # ADD FLUSHING QUEUED MESSAGES
+        return n
+
+    def Logout(self, request: chat.LogoutRequest, context):
+        n = chat.LogoutReply()
+        username = request.username
+        if username not in self.clients.keys():
+            n.success = False
+            n.error = "No existing user found."
+            print("Nonexistent user logout request from {}".format(username))
+        else:
+            self.clients[username]["active"] = False
+            n.success = True
+            print("{} left the chat.".format(username))
+        return n
 
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 
 if __name__ == '__main__':
-    port = 11912  # a random port for the server to run on
-    # the workers is like the amount of threads that can be opened at the same time, when there are 10 clients connected
-    # then no more clients able to connect to the server.
+    port = 11912 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))  # create a gRPC server
     rpc.add_ChatServerServicer_to_server(ChatServer(), server)  # register the server to gRPC
-    # gRPC basically manages all the threading and server responding logic, which is perfect!
     print('Starting server. Listening...')
     server.add_insecure_port('[::]:' + str(port))
     server.start()
-    # Server starts in background (in another thread) so keep waiting
-    # if we don't wait here the main thread will end, which will end all the child threads, and thus the threads
-    # from the server won't continue to work and stop the server
     while True:
         time.sleep(64 * 64 * 100)

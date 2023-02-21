@@ -48,18 +48,51 @@ class Client:
             n = chat.SignupRequest() 
             n.username = username
             reply = self.conn.Signup(n)
-            if reply.username == n.username:
-                self.username = reply.username
+            if reply.success:
+                self.username = n.username
                 print("Signup successful!")
+            else:
+                print("{}".format(reply.error))
+
+    def login(self, username):
+        if username != '':
+            n = chat.LoginRequest() 
+            n.username = username
+            reply = self.conn.Login(n)
+            if reply.success:
+                self.username = n.username
+                print("Login successful!")
+            else:
+                print("{}".format(reply.error))
+
+    def logout(self):
+        n = chat.LogoutRequest()
+        n.username = self.username
+        reply = self.conn.Logout(n)
+        if reply.success:
+            c.username = None
+            print("Logout successful!")
+
 
 if __name__ == '__main__':
     c = Client()
-    while c.username is None:
-        # retrieve a username so we can distinguish all the different clients
-        username = input("Enter username: ")
-        c.signup(username)
-    print("Send a message!")
-    while True:
-        message = input('')
-        c.send_message(message)
-    # input, send_message 
+    try:        
+        while c.username is None:
+            req = input("Enter 1|{Username} to sign up or 2|{Username} to log in: ")
+            if req[0:2] == "1|":
+                c.signup(req[2:])
+            elif req[0:2] == "2|":
+                c.login(req[2:])
+            else:
+                print("Invalid input.")
+            print("Send a message! Otherwise, \logout to log out.")
+            while c.username is not None:
+                request = input('')
+                if request == "\logout":
+                    c.logout()
+                else:
+                    c.send_message(request)
+    except KeyboardInterrupt:
+        if c.username is not None:
+            # logout user
+            c.logout()
