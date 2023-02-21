@@ -12,6 +12,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
     def __init__(self):
         # List with all the chat history
         self.chats = [] # need to edit so you have multiple chat lists
+        self.clients = {}
 
     # The stream which will be used to send new messages to clients
     def ChatStream(self, request_iterator, context):
@@ -43,6 +44,15 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         print("[{}] {}".format(request.username, request.message))
         self.chats.append(request)
         return chat.Empty()  
+    
+    def Signup(self, request: chat.SignupRequest, context):
+        self.clients[request.username] = {"active": True, "queue": []}
+        print("New user {} has arrived!".format(request.username))
+        n = chat.SignupReply()
+        n.username = request.username
+        return n
+
+
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 

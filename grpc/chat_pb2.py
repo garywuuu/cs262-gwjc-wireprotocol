@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\nchat.proto\x12\x04grpc\"\x07\n\x05\x45mpty\"?\n\x07Message\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"\x19\n\x05Login\x12\x10\n\x08username\x18\x01 \x01(\t\"\x16\n\x04List\x12\x0e\n\x06search\x18\x04 \x01(\t\"\x1a\n\x06\x44\x65lete\x12\x10\n\x08username\x18\x01 \x01(\t2c\n\nChatServer\x12*\n\nChatStream\x12\x0b.grpc.Empty\x1a\r.grpc.Message0\x01\x12)\n\x0bSendMessage\x12\r.grpc.Message\x1a\x0b.grpc.Emptyb\x06proto3'
+  serialized_pb=b'\n\nchat.proto\x12\x04grpc\"\x07\n\x05\x45mpty\"?\n\x07Message\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"!\n\rSignupRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x1f\n\x0bSignupReply\x12\x10\n\x08username\x18\x01 \x01(\t\"\x19\n\x05Login\x12\x10\n\x08username\x18\x01 \x01(\t\"\x16\n\x04List\x12\x0e\n\x06search\x18\x04 \x01(\t\"\x1a\n\x06\x44\x65lete\x12\x10\n\x08username\x18\x01 \x01(\t2\x95\x01\n\nChatServer\x12*\n\nChatStream\x12\x0b.grpc.Empty\x1a\r.grpc.Message0\x01\x12)\n\x0bSendMessage\x12\r.grpc.Message\x1a\x0b.grpc.Empty\x12\x30\n\x06Signup\x12\x13.grpc.SignupRequest\x1a\x11.grpc.SignupReplyb\x06proto3'
 )
 
 
@@ -96,6 +96,70 @@ _MESSAGE = _descriptor.Descriptor(
 )
 
 
+_SIGNUPREQUEST = _descriptor.Descriptor(
+  name='SignupRequest',
+  full_name='grpc.SignupRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='username', full_name='grpc.SignupRequest.username', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=94,
+  serialized_end=127,
+)
+
+
+_SIGNUPREPLY = _descriptor.Descriptor(
+  name='SignupReply',
+  full_name='grpc.SignupReply',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='username', full_name='grpc.SignupReply.username', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=129,
+  serialized_end=160,
+)
+
+
 _LOGIN = _descriptor.Descriptor(
   name='Login',
   full_name='grpc.Login',
@@ -123,8 +187,8 @@ _LOGIN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=94,
-  serialized_end=119,
+  serialized_start=162,
+  serialized_end=187,
 )
 
 
@@ -155,8 +219,8 @@ _LIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=121,
-  serialized_end=143,
+  serialized_start=189,
+  serialized_end=211,
 )
 
 
@@ -187,12 +251,14 @@ _DELETE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=145,
-  serialized_end=171,
+  serialized_start=213,
+  serialized_end=239,
 )
 
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 DESCRIPTOR.message_types_by_name['Message'] = _MESSAGE
+DESCRIPTOR.message_types_by_name['SignupRequest'] = _SIGNUPREQUEST
+DESCRIPTOR.message_types_by_name['SignupReply'] = _SIGNUPREPLY
 DESCRIPTOR.message_types_by_name['Login'] = _LOGIN
 DESCRIPTOR.message_types_by_name['List'] = _LIST
 DESCRIPTOR.message_types_by_name['Delete'] = _DELETE
@@ -211,6 +277,20 @@ Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,
   # @@protoc_insertion_point(class_scope:grpc.Message)
   })
 _sym_db.RegisterMessage(Message)
+
+SignupRequest = _reflection.GeneratedProtocolMessageType('SignupRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SIGNUPREQUEST,
+  '__module__' : 'chat_pb2'
+  # @@protoc_insertion_point(class_scope:grpc.SignupRequest)
+  })
+_sym_db.RegisterMessage(SignupRequest)
+
+SignupReply = _reflection.GeneratedProtocolMessageType('SignupReply', (_message.Message,), {
+  'DESCRIPTOR' : _SIGNUPREPLY,
+  '__module__' : 'chat_pb2'
+  # @@protoc_insertion_point(class_scope:grpc.SignupReply)
+  })
+_sym_db.RegisterMessage(SignupReply)
 
 Login = _reflection.GeneratedProtocolMessageType('Login', (_message.Message,), {
   'DESCRIPTOR' : _LOGIN,
@@ -242,8 +322,8 @@ _CHATSERVER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=173,
-  serialized_end=272,
+  serialized_start=242,
+  serialized_end=391,
   methods=[
   _descriptor.MethodDescriptor(
     name='ChatStream',
@@ -262,6 +342,16 @@ _CHATSERVER = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_MESSAGE,
     output_type=_EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Signup',
+    full_name='grpc.ChatServer.Signup',
+    index=2,
+    containing_service=None,
+    input_type=_SIGNUPREQUEST,
+    output_type=_SIGNUPREPLY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

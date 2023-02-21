@@ -10,6 +10,14 @@ message Message {
     string message = 3;
 }
 
+message SignupRequest {
+    string username = 1;
+}
+
+message SignupReply {
+    string username = 1;
+}
+
 message Login {
     string username = 1;
 }
@@ -33,6 +41,7 @@ message Delete {
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
-    rpc ChatStream (Empty) returns (stream Message); // pass userid instead of empty
+    rpc ChatStream (Empty) returns (stream Message); 
     rpc SendMessage (Message) returns (Empty);
+    rpc Signup (SignupRequest) returns (SignupReply);
 }

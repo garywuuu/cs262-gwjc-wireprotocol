@@ -15,9 +15,9 @@ port = 11912
 
 class Client:
 
-    def __init__(self, u: str):
+    def __init__(self):
         # create a gRPC channel + stub
-        self.username = u
+        self.username = None
         channel = grpc.insecure_channel(address + ':' + str(port))
         self.conn = rpc.ChatServerStub(channel)
         # create new listening thread for when new message streams come in
@@ -43,14 +43,23 @@ class Client:
             print("S[{}] {}".format(n.username, n.message))  # debugging statement
             self.conn.SendMessage(n)  # send the Note to the server
 
+    def signup(self, username):
+        if username != '':
+            n = chat.SignupRequest() 
+            n.username = username
+            reply = self.conn.Signup(n)
+            if reply.username == n.username:
+                self.username = reply.username
+                print("Signup successful!")
+
 if __name__ == '__main__':
-    username = None
-    while username is None:
+    c = Client()
+    while c.username is None:
         # retrieve a username so we can distinguish all the different clients
-        username = input("Enter username:")
-    c = Client(username)
+        username = input("Enter username: ")
+        c.signup(username)
     print("Send a message!")
     while True:
-        message = input('\n')
+        message = input('')
         c.send_message(message)
     # input, send_message 

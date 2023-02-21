@@ -33,6 +33,11 @@ class ChatServerStub(object):
                 request_serializer=chat__pb2.Message.SerializeToString,
                 response_deserializer=chat__pb2.Empty.FromString,
                 )
+        self.Signup = channel.unary_unary(
+                '/grpc.ChatServer/Signup',
+                request_serializer=chat__pb2.SignupRequest.SerializeToString,
+                response_deserializer=chat__pb2.SignupReply.FromString,
+                )
 
 
 class ChatServerServicer(object):
@@ -49,13 +54,18 @@ class ChatServerServicer(object):
 
     def ChatStream(self, request, context):
         """This bi-directional stream makes it possible to send and receive Notes between 2 persons
-        pass userid instead of empty
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SendMessage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Signup(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -73,6 +83,11 @@ def add_ChatServerServicer_to_server(servicer, server):
                     servicer.SendMessage,
                     request_deserializer=chat__pb2.Message.FromString,
                     response_serializer=chat__pb2.Empty.SerializeToString,
+            ),
+            'Signup': grpc.unary_unary_rpc_method_handler(
+                    servicer.Signup,
+                    request_deserializer=chat__pb2.SignupRequest.FromString,
+                    response_serializer=chat__pb2.SignupReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -124,5 +139,22 @@ class ChatServer(object):
         return grpc.experimental.unary_unary(request, target, '/grpc.ChatServer/SendMessage',
             chat__pb2.Message.SerializeToString,
             chat__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Signup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/grpc.ChatServer/Signup',
+            chat__pb2.SignupRequest.SerializeToString,
+            chat__pb2.SignupReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
