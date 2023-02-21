@@ -37,11 +37,11 @@ class Client:
         This method is called when user enters something into the textbox
         """
         if message != '':
-            n = chat.Note()  # create protobug message (called Note)
-            n.sendMessage.username = self.username  # set the username
-            n.sendMessage.message = message  # set the actual message of the note
-            print("S[{}] {}".format(n.sendMessage.username, n.sendMessage.message))  # debugging statement
-            self.conn.SendNote(n)  # send the Note to the server
+            n = chat.Message()  # create protobug message (called Note)
+            n.username = self.username  # set the username
+            n.message = message  # set the actual message of the note
+            print("S[{}] {}".format(n.username, n.message))  # debugging statement
+            self.conn.SendMessage(n)  # send the Note to the server
 
 if __name__ == '__main__':
     username = None

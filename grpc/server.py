@@ -32,7 +32,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 lastindex += 1
                 yield n # look at yield = return
 
-    def SendNote(self, request: chat.Note, context):
+    def SendMessage(self, request: chat.Message, context):
         """
         This method is called when a clients sends a Note to the server.
 
@@ -40,12 +40,9 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         :param context:
         :return:
         """
-        if request.HasField("sendMessage"):
-            # this is only for the server console
-            print("[{}] {}".format(request.sendMessage.username, request.sendMessage.message))
-            # Add it to the chat history
-            self.chats.append(request)
-            return chat.Empty()  # something needs to be returned required by protobuf language, we just return empty msg
+        print("[{}] {}".format(request.username, request.message))
+        self.chats.append(request)
+        return chat.Empty()  
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 
