@@ -91,6 +91,13 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             print("{} left the chat.".format(username))
         return n
 
+    def List(self, request: chat.ListRequest, context):
+        n = chat.ListReply()
+        for user in self.clients.keys():
+            n.users.append(user)
+        print("Accounts listed.")
+        n.success = True
+        return n
 
     # new functions for creating account, listing accounts, etc in addition to sendnote
 

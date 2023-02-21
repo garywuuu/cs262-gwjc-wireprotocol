@@ -37,6 +37,16 @@ message LogoutReply {
     string error = 2;
 }
 
+message ListRequest {
+    // implement regex WILDCARd here ***
+}
+
+message ListReply {
+    bool success = 1;
+    string error = 2;
+    repeated string users = 3;
+}
+
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
     rpc ChatStream (Empty) returns (stream Message); 
@@ -44,4 +54,5 @@ service ChatServer {
     rpc Signup (SignupRequest) returns (SignupReply);
     rpc Login (LoginRequest) returns (LoginReply);
     rpc Logout (LogoutRequest) returns (LogoutReply);
+    rpc List (ListRequest) returns (ListReply);
 }

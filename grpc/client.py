@@ -73,6 +73,15 @@ class Client:
             c.username = None
             print("Logout successful!")
 
+    def list(self):
+        # include wildcard later ***
+        n = chat.ListRequest()
+        reply = self.conn.List(n)
+        if reply.success:
+            for user in reply.users:
+                print(user)
+        else:
+            print("{}".format(reply.error))
 
 if __name__ == '__main__':
     c = Client()
@@ -85,11 +94,14 @@ if __name__ == '__main__':
                 c.login(req[2:])
             else:
                 print("Invalid input.")
-            print("Send a message! Otherwise, \logout to log out.")
+            print("Send a message! Or, \logout to log out, \list to list accounts.")
             while c.username is not None:
                 request = input('')
                 if request == "\logout":
                     c.logout()
+                elif request == "\list":
+                    # include wildcard ***
+                    c.list()
                 else:
                     c.send_message(request)
     except KeyboardInterrupt:
