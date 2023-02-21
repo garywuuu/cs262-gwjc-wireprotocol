@@ -16,13 +16,13 @@ class ChatServerStub(object):
         """
         self.ChatStream = channel.unary_stream(
                 '/grpc.ChatServer/ChatStream',
-                request_serializer=chat__pb2.Empty.SerializeToString,
-                response_deserializer=chat__pb2.Message.FromString,
+                request_serializer=chat__pb2.ConnectRequest.SerializeToString,
+                response_deserializer=chat__pb2.ConnectReply.FromString,
                 )
         self.SendMessage = channel.unary_unary(
                 '/grpc.ChatServer/SendMessage',
-                request_serializer=chat__pb2.Message.SerializeToString,
-                response_deserializer=chat__pb2.Empty.FromString,
+                request_serializer=chat__pb2.MessageRequest.SerializeToString,
+                response_deserializer=chat__pb2.MessageReply.FromString,
                 )
         self.Signup = channel.unary_unary(
                 '/grpc.ChatServer/Signup',
@@ -57,7 +57,8 @@ class ChatServerServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SendMessage(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """change from MessageRequest to Get *** ??
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -91,13 +92,13 @@ def add_ChatServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ChatStream': grpc.unary_stream_rpc_method_handler(
                     servicer.ChatStream,
-                    request_deserializer=chat__pb2.Empty.FromString,
-                    response_serializer=chat__pb2.Message.SerializeToString,
+                    request_deserializer=chat__pb2.ConnectRequest.FromString,
+                    response_serializer=chat__pb2.ConnectReply.SerializeToString,
             ),
             'SendMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.SendMessage,
-                    request_deserializer=chat__pb2.Message.FromString,
-                    response_serializer=chat__pb2.Empty.SerializeToString,
+                    request_deserializer=chat__pb2.MessageRequest.FromString,
+                    response_serializer=chat__pb2.MessageReply.SerializeToString,
             ),
             'Signup': grpc.unary_unary_rpc_method_handler(
                     servicer.Signup,
@@ -141,8 +142,8 @@ class ChatServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/grpc.ChatServer/ChatStream',
-            chat__pb2.Empty.SerializeToString,
-            chat__pb2.Message.FromString,
+            chat__pb2.ConnectRequest.SerializeToString,
+            chat__pb2.ConnectReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -158,8 +159,8 @@ class ChatServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/grpc.ChatServer/SendMessage',
-            chat__pb2.Message.SerializeToString,
-            chat__pb2.Empty.FromString,
+            chat__pb2.MessageRequest.SerializeToString,
+            chat__pb2.MessageReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

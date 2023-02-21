@@ -20,28 +20,43 @@ class Client:
         self.username = None
         channel = grpc.insecure_channel(address + ':' + str(port))
         self.conn = rpc.ChatServerStub(channel)
-        # create new listening thread for when new message streams come in
-        threading.Thread(target=self.__listen_for_messages, daemon=True).start()
+
+    def thread(self):
+        if self.username is not None:
+            # create new listening thread for when new message streams come in
+            threading.Thread(target=self.__listen_for_messages, daemon=True).start()
 
     def __listen_for_messages(self):
         """
         This method will be ran in a separate thread as the main/ui thread, because the for-in call is blocking
         when waiting for new messages
         """
-        for note in self.conn.ChatStream(chat.Empty()):  # this line will wait for new messages from the server!
-            # print("R[{}] {}".format(note.name, note.message))  # debugging statement
-            pass
+        if self.username is not None:
+            n = chat.ConnectRequest()
+            n.recipient = self.username
+            for connectReply in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
+                if connectReply.active:
+                    print("R[{}] {}".format(connectReply.sender, connectReply.message)) 
+                else:
+                    return
 
-    def send_message(self, message):
+    def send_message(self, message, recipient):
         """
         This method is called when user enters something into the textbox
         """
-        if message != '':
-            n = chat.Message()  # create protobug message (called Note)
-            n.username = self.username  # set the username
-            n.message = message  # set the actual message of the note
-            print("S[{}] {}".format(n.username, n.message))  # debugging statement
-            self.conn.SendMessage(n)  # send the Note to the server
+        if recipient != '' and message != '':
+            n = chat.MessageRequest()  # create protobug message (called Note)
+            n.sender = self.username  # set the username
+            n.recipient = recipient 
+            n.message = message
+            print("S[{} -> {}] {}".format(n.sender, n.recipient, n.message)) 
+            reply = self.conn.SendMessage(n)  # send to the server
+            if reply.success:
+                pass
+            else:
+                print("{}".format(reply.error))
+        else:
+            print("Please enter a recipient and a message.")
 
     def signup(self, username):
         if username != '':
@@ -94,7 +109,8 @@ if __name__ == '__main__':
                 c.login(req[2:])
             else:
                 print("Invalid input.")
-            print("Send a message! Or, \logout to log out, \list to list accounts.")
+            c.thread()
+            print("Commands: \send to send a message, \logout to log out, \list to list accounts.")
             while c.username is not None:
                 request = input('')
                 if request == "\logout":
@@ -102,9 +118,12 @@ if __name__ == '__main__':
                 elif request == "\list":
                     # include wildcard ***
                     c.list()
+                elif request == "\send":
+                    recipient = input("Recipient: ")
+                    message = input("Message: ")
+                    c.send_message(message, recipient)
                 else:
-                    c.send_message(request)
+                    print("Please enter a valid command.")
     except KeyboardInterrupt:
         if c.username is not None:
-            # logout user
             c.logout()
