@@ -34,9 +34,11 @@ class Client:
         if self.username is not None:
             n = chat.ConnectRequest()
             n.recipient = self.username
-            for note in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
-                print("R[{}] {}".format(note.sender, note.message))  # debugging statement
-                pass
+            for connectReply in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
+                if connectReply.active:
+                    print("R[{}] {}".format(connectReply.sender, connectReply.message)) 
+                else:
+                    return
 
     def send_message(self, message, recipient):
         """

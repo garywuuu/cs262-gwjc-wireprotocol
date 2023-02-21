@@ -19,6 +19,13 @@ message ConnectRequest {
     string recipient = 1;
 }
 
+message ConnectReply {
+    string sender = 1;
+    string recipient = 2;
+    string message = 3;
+    bool active = 4;
+}
+
 message SignupRequest {
     string username = 1;
 }
@@ -58,7 +65,7 @@ message ListReply {
 
 service ChatServer {
     // This bi-directional stream makes it possible to send and receive Notes between 2 persons
-    rpc ChatStream (ConnectRequest) returns (stream MessageRequest); 
+    rpc ChatStream (ConnectRequest) returns (stream ConnectReply); 
     // change from MessageRequest to Get *** ??
     rpc SendMessage (MessageRequest) returns (MessageReply);
     rpc Signup (SignupRequest) returns (SignupReply);
