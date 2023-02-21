@@ -20,8 +20,11 @@ class Client:
         self.username = None
         channel = grpc.insecure_channel(address + ':' + str(port))
         self.conn = rpc.ChatServerStub(channel)
-        # create new listening thread for when new message streams come in
-        threading.Thread(target=self.__listen_for_messages, daemon=True).start()
+
+    def thread(self):
+        if self.username is not None:
+            # create new listening thread for when new message streams come in
+            threading.Thread(target=self.__listen_for_messages, daemon=True).start()
 
     def __listen_for_messages(self):
         """
@@ -29,10 +32,10 @@ class Client:
         when waiting for new messages
         """
         if self.username is not None:
-            n = chat.GetRequest()
+            n = chat.ConnectRequest()
             n.recipient = self.username
-            for getReply in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
-                print("R[{}] {}".format(getReply.sender, getReply.message))  # debugging statement
+            for note in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
+                print("R[{}] {}".format(note.sender, note.message))  # debugging statement
                 pass
 
     def send_message(self, message, recipient):
@@ -104,6 +107,7 @@ if __name__ == '__main__':
                 c.login(req[2:])
             else:
                 print("Invalid input.")
+            c.thread()
             print("Commands: \send to send a message, \logout to log out, \list to list accounts.")
             while c.username is not None:
                 request = input('')

@@ -14,7 +14,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         self.clients = {}
 
     # The stream which will be used to send new messages to clients
-    def ChatStream(self, request: chat.GetRequest, request_iterator, context):
+    def ChatStream(self, request: chat.ConnectRequest, context):
         """
         This is a response-stream type call. This means the server can keep sending messages
         Every client opens this connection and waits for server to send new messages
@@ -33,7 +33,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 # n = self.chats[lastindex] #make sure to pull from one specific list, not just global list
                 n = self.clients[recipient]["queue"][lastindex]
                 lastindex += 1
-                return n # look at yield = return
+                yield n # look at yield = return
 
     def SendMessage(self, request: chat.MessageRequest, context):
         """
@@ -56,11 +56,11 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             #     self.clients[recipient]["queue"].append(request)
             # else:
                 # inactive user; must queue
-            getReply = chat.GetReply()
-            getReply.sender = sender
-            getReply.recipient = recipient
-            getReply.message = message
-            self.clients[recipient]["queue"].append(getReply)
+            forward = chat.MessageRequest()
+            forward.sender = sender
+            forward.recipient = recipient
+            forward.message = message
+            self.clients[recipient]["queue"].append(forward)
             n.success = True
         print("[{} -> {}] {}".format(sender,recipient,message))
         return n
