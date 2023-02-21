@@ -2,6 +2,7 @@ from concurrent import futures
 
 import grpc
 import time
+import queue
 
 import chat_pb2 as chat
 import chat_pb2_grpc as rpc
@@ -23,17 +24,16 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         :param context:
         :return:
         """
-        lastindex = 0
         recipient = request.recipient
         # For every client a infinite loop starts (in gRPC's own managed thread)
         while True:
             # Check if there are any new messages
             # if self.clients[recipient]
-            if len(self.clients[recipient]["queue"]) > lastindex: 
-                # n = self.chats[lastindex] #make sure to pull from one specific list, not just global list
-                n = self.clients[recipient]["queue"][lastindex]
-                lastindex += 1
-                yield n # look at yield = return
+            if self.clients[recipient]["active"]:
+                if self.clients[recipient]["queue"].qsize() > 0: 
+                    # n = self.chats[lastindex] #make sure to pull from one specific list, not just global list
+                    n = self.clients[recipient]["queue"].get(block=False)
+                    yield n # look at yield = return
 
     def SendMessage(self, request: chat.MessageRequest, context):
         """
@@ -51,18 +51,20 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             n.success = False
             n.error = "Recipient not found."
         else:
-            # HANDLE USER ACTIVE ABOVE ???
+            # active user check
+            forward = chat.ConnectReply()
             # if self.clients[recipient]["active"]:
-            #     self.clients[recipient]["queue"].append(request)
-            # else:
-                # inactive user; must queue
-            forward = chat.MessageRequest()
+            forward.active = True
             forward.sender = sender
             forward.recipient = recipient
             forward.message = message
-            self.clients[recipient]["queue"].append(forward)
+            self.clients[recipient]["queue"].put(forward)
             n.success = True
-        print("[{} -> {}] {}".format(sender,recipient,message))
+            if self.clients[recipient]["active"]:
+                print("Sent: [{} -> {}] {}".format(sender,recipient,message))
+            else: 
+                print("Queued: [{} -> {}] {}".format(sender,recipient,message))
+            # else:            
         return n
     
     def Signup(self, request: chat.SignupRequest, context):
@@ -74,7 +76,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             print("Signup from {} failed: User already exists.".format(username))
         else:
             n.success = True
-            self.clients[username] = {"active": True, "queue": []}
+            self.clients[username] = {"active": True, "queue": queue.SimpleQueue()}
             print("New user {} has arrived!".format(username))
         return n
 
@@ -95,6 +97,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             else:
                 n.success = True
                 self.clients[username]["active"] = True
+                print("{} logged back in!".format(username))
                 # ADD FLUSHING QUEUED MESSAGES
         return n
 
@@ -106,6 +109,11 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             n.error = "No existing user found."
             print("Nonexistent user logout request from {}".format(username))
         else:
+            # send disconenct message through chatstream
+            disconnect = chat.ConnectReply()
+            disconnect.active = False
+            self.clients[username]["queue"].put(disconnect)
+            # after disconnect message goes through, then set inactive
             self.clients[username]["active"] = False
             n.success = True
             print("{} left the chat.".format(username))
