@@ -119,6 +119,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
             self.clients[username]["active"] = False
             n.success = True
             print("{} left the chat.".format(username))
+        print("finishes logout")
         return n
 
     def List(self, request: chat.ListRequest, context):
@@ -136,6 +137,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         username = request.username
         n = chat.DeleteReply()
         if username in self.clients.keys():
+            time.sleep(3) # safeguard
             # thread-cutting and other functions handled in logout
             # here, we just remove the user from the clients dictionary
             self.clients.pop(username)

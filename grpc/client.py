@@ -1,8 +1,5 @@
 
 import threading
-from tkinter import *
-from tkinter import simpledialog
-
 import grpc
 
 import chat_pb2 as chat
@@ -10,7 +7,6 @@ import chat_pb2_grpc as rpc
 
 address = 'localhost'
 port = 11912
-
 
 
 class Client:
@@ -55,12 +51,13 @@ class Client:
             n.sender = self.username  
             n.recipient = recipient 
             n.message = message
-            print("S[{} -> {}] {}".format(n.sender, n.recipient, n.message)) 
+            # print("S[{} -> {}] {}".format(n.sender, n.recipient, n.message)) 
             reply = self.conn.SendMessage(n)  # send to the server
-            if reply.success:
-                pass
-            else:
-                print("{}".format(reply.error))
+            # if reply.success:
+            #     pass
+            # else:
+            #     print("{}".format(reply.error))
+            return reply
         else:
             print("Please enter a recipient and a message.")
 
@@ -71,9 +68,10 @@ class Client:
             reply = self.conn.Signup(n)
             if reply.success:
                 self.username = n.username
-                print("Signup successful!")
-            else:
-                print("{}".format(reply.error))
+            #     print("Signup successful!")
+            # else:
+            #     print("{}".format(reply.error))
+            return reply
 
     def login(self, username):
         if username != '':
@@ -82,9 +80,10 @@ class Client:
             reply = self.conn.Login(n)
             if reply.success:
                 self.username = n.username
-                print("Login successful!")
-            else:
-                print("{}".format(reply.error))
+            #     print("Login successful!")
+            # else:
+            #     print("{}".format(reply.error))
+            return reply
 
     def logout(self):
         n = chat.LogoutRequest()
@@ -92,27 +91,30 @@ class Client:
         reply = self.conn.Logout(n)
         if reply.success:
             self.username = None
-            print("Logout successful!")
+            # print("Logout successful!")
+        return reply
 
     def list(self, query):
         n = chat.ListRequest()
         n.query = query
         reply = self.conn.List(n)
-        if reply.success:
-            for user in reply.users:
-                print(user)
-        else:
-            print("{}".format(reply.error))
+        return reply
+        # if reply.success:
+        #     for user in reply.users:
+        #         print(user)
+        # else:
+        #     print("{}".format(reply.error))
 
     def delete(self):
         n = chat.DeleteRequest()
         n.username = self.username
-        self.logout()
+        temp = self.logout()
         reply = self.conn.Delete(n)
-        if reply.success:
-            print("Account deleted.")
-        else:
-            print("{}".format(reply.error))
+        return reply
+        # if reply.success:
+        #     print("Account deleted.")
+        # else:
+        #     print("{}".format(reply.error))
 
 
 if __name__ == '__main__':
@@ -121,32 +123,58 @@ if __name__ == '__main__':
         while c.username is None:
             req = input("Enter 1|{Username} to sign up or 2|{Username} to log in: ")
             if req[0:2] == "1|":
-                c.signup(req[2:])
+                reply = c.signup(req[2:])
+                if reply.success:
+                    print("Signup successful!")
+                else:
+                    print("{}".format(reply.error))
             elif req[0:2] == "2|":
-                c.login(req[2:])
+                reply = c.login(req[2:])
+                if reply.success:
+                    print("Login successful!")
+                else:
+                    print("{}".format(reply.error))
             else:
                 print("Invalid input.")
-            c.thread()
-            print("Commands: \send, \logout, \list, \delete.")
+            # username set, can now start thread and take commands
+            if c.username is not None:
+                c.thread()
+                print("Commands: \send, \logout, \list, \delete.")
             while c.username is not None:
                 request = input('')
                 if request == "\logout":
-                    c.logout()
+                    reply = c.logout()
+                    if reply.success:
+                        print("Logout successful!")
                 elif request == "\list":
                     query = input("Query: ")
-                    c.list(query)
+                    reply = c.list(query)
+                    if reply.success:
+                        for user in reply.users:
+                            print(user)
+                    else:
+                        print("{}".format(reply.error))
                 elif request == "\send":
                     recipient = input("Recipient: ")
                     message = input("Message: ")
-                    c.send_message(message, recipient)
+                    reply = c.send_message(message, recipient)
+                    if reply is not None:
+                        if reply.success:
+                            print("S[{}] {}".format(recipient, message)) 
+                        else:
+                            print("{}".format(reply.error))
                 elif request == "\delete":
                     confirm = input("Are you sure you want to delete your account? [y]: ")
                     if confirm == "y":
-                        c.delete()
+                        reply = c.delete()
+                        if reply.success:
+                            print("Account deleted.")
+                        else:
+                            print("{}".format(reply.error))
                     else:
                         print("Account deletion cancelled.")
                 else:
                     print("Please enter a valid command.")
     except KeyboardInterrupt: # catch the ctrl+c keyboard interrupt
         if c.username is not None:
-            c.logout()
+            temp = c.logout()

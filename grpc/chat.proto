@@ -73,9 +73,9 @@ message DeleteReply {
 }
 
 service ChatServer {
-    // This bi-directional stream makes it possible to send and receive Notes between 2 persons
+    // request-stream setup to send requests, then continuously receive reply
     rpc ChatStream (ConnectRequest) returns (stream ConnectReply); 
-    // change from MessageRequest to Get *** ??
+    // other functions are simple RPCs
     rpc SendMessage (MessageRequest) returns (MessageReply);
     rpc Signup (SignupRequest) returns (SignupReply);
     rpc Login (LoginRequest) returns (LoginReply);
