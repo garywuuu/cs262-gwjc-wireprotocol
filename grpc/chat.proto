@@ -54,13 +54,22 @@ message LogoutReply {
 }
 
 message ListRequest {
-    // implement regex WILDCARd here ***
+    string query = 1;
 }
 
 message ListReply {
     bool success = 1;
     string error = 2;
     repeated string users = 3;
+}
+
+message DeleteRequest {
+    string username = 1;
+}
+
+message DeleteReply {
+    bool success = 1;
+    string error = 2;
 }
 
 service ChatServer {
@@ -72,4 +81,5 @@ service ChatServer {
     rpc Login (LoginRequest) returns (LoginReply);
     rpc Logout (LogoutRequest) returns (LogoutReply);
     rpc List (ListRequest) returns (ListReply);
+    rpc Delete (DeleteRequest) returns (DeleteReply);
 }

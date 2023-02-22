@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\nchat.proto\x12\x04grpc\"\x07\n\x05\x45mpty\"D\n\x0eMessageRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\".\n\x0cMessageReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"#\n\x0e\x43onnectRequest\x12\x11\n\trecipient\x18\x01 \x01(\t\"R\n\x0c\x43onnectReply\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0e\n\x06\x61\x63tive\x18\x04 \x01(\x08\"!\n\rSignupRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"-\n\x0bSignupReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\" \n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\",\n\nLoginReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"!\n\rLogoutRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"-\n\x0bLogoutReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"\r\n\x0bListRequest\":\n\tListReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\x12\r\n\x05users\x18\x03 \x03(\t2\xbe\x02\n\nChatServer\x12\x38\n\nChatStream\x12\x14.grpc.ConnectRequest\x1a\x12.grpc.ConnectReply0\x01\x12\x37\n\x0bSendMessage\x12\x14.grpc.MessageRequest\x1a\x12.grpc.MessageReply\x12\x30\n\x06Signup\x12\x13.grpc.SignupRequest\x1a\x11.grpc.SignupReply\x12-\n\x05Login\x12\x12.grpc.LoginRequest\x1a\x10.grpc.LoginReply\x12\x30\n\x06Logout\x12\x13.grpc.LogoutRequest\x1a\x11.grpc.LogoutReply\x12*\n\x04List\x12\x11.grpc.ListRequest\x1a\x0f.grpc.ListReplyb\x06proto3'
+  serialized_pb=b'\n\nchat.proto\x12\x04grpc\"\x07\n\x05\x45mpty\"D\n\x0eMessageRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\".\n\x0cMessageReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"#\n\x0e\x43onnectRequest\x12\x11\n\trecipient\x18\x01 \x01(\t\"R\n\x0c\x43onnectReply\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0e\n\x06\x61\x63tive\x18\x04 \x01(\x08\"!\n\rSignupRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"-\n\x0bSignupReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\" \n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\",\n\nLoginReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"!\n\rLogoutRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"-\n\x0bLogoutReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\"\x1c\n\x0bListRequest\x12\r\n\x05query\x18\x01 \x01(\t\":\n\tListReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\x12\r\n\x05users\x18\x03 \x03(\t\"!\n\rDeleteRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"-\n\x0b\x44\x65leteReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t2\xf0\x02\n\nChatServer\x12\x38\n\nChatStream\x12\x14.grpc.ConnectRequest\x1a\x12.grpc.ConnectReply0\x01\x12\x37\n\x0bSendMessage\x12\x14.grpc.MessageRequest\x1a\x12.grpc.MessageReply\x12\x30\n\x06Signup\x12\x13.grpc.SignupRequest\x1a\x11.grpc.SignupReply\x12-\n\x05Login\x12\x12.grpc.LoginRequest\x1a\x10.grpc.LoginReply\x12\x30\n\x06Logout\x12\x13.grpc.LogoutRequest\x1a\x11.grpc.LogoutReply\x12*\n\x04List\x12\x11.grpc.ListRequest\x1a\x0f.grpc.ListReply\x12\x30\n\x06\x44\x65lete\x12\x13.grpc.DeleteRequest\x1a\x11.grpc.DeleteReplyb\x06proto3'
 )
 
 
@@ -441,6 +441,13 @@ _LISTREQUEST = _descriptor.Descriptor(
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='query', full_name='grpc.ListRequest.query', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -454,7 +461,7 @@ _LISTREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=512,
-  serialized_end=525,
+  serialized_end=540,
 )
 
 
@@ -499,8 +506,79 @@ _LISTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=527,
-  serialized_end=585,
+  serialized_start=542,
+  serialized_end=600,
+)
+
+
+_DELETEREQUEST = _descriptor.Descriptor(
+  name='DeleteRequest',
+  full_name='grpc.DeleteRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='username', full_name='grpc.DeleteRequest.username', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=602,
+  serialized_end=635,
+)
+
+
+_DELETEREPLY = _descriptor.Descriptor(
+  name='DeleteReply',
+  full_name='grpc.DeleteReply',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='grpc.DeleteReply.success', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='grpc.DeleteReply.error', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=637,
+  serialized_end=682,
 )
 
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
@@ -516,6 +594,8 @@ DESCRIPTOR.message_types_by_name['LogoutRequest'] = _LOGOUTREQUEST
 DESCRIPTOR.message_types_by_name['LogoutReply'] = _LOGOUTREPLY
 DESCRIPTOR.message_types_by_name['ListRequest'] = _LISTREQUEST
 DESCRIPTOR.message_types_by_name['ListReply'] = _LISTREPLY
+DESCRIPTOR.message_types_by_name['DeleteRequest'] = _DELETEREQUEST
+DESCRIPTOR.message_types_by_name['DeleteReply'] = _DELETEREPLY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
@@ -609,6 +689,20 @@ ListReply = _reflection.GeneratedProtocolMessageType('ListReply', (_message.Mess
   })
 _sym_db.RegisterMessage(ListReply)
 
+DeleteRequest = _reflection.GeneratedProtocolMessageType('DeleteRequest', (_message.Message,), {
+  'DESCRIPTOR' : _DELETEREQUEST,
+  '__module__' : 'chat_pb2'
+  # @@protoc_insertion_point(class_scope:grpc.DeleteRequest)
+  })
+_sym_db.RegisterMessage(DeleteRequest)
+
+DeleteReply = _reflection.GeneratedProtocolMessageType('DeleteReply', (_message.Message,), {
+  'DESCRIPTOR' : _DELETEREPLY,
+  '__module__' : 'chat_pb2'
+  # @@protoc_insertion_point(class_scope:grpc.DeleteReply)
+  })
+_sym_db.RegisterMessage(DeleteReply)
+
 
 
 _CHATSERVER = _descriptor.ServiceDescriptor(
@@ -618,8 +712,8 @@ _CHATSERVER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=588,
-  serialized_end=906,
+  serialized_start=685,
+  serialized_end=1053,
   methods=[
   _descriptor.MethodDescriptor(
     name='ChatStream',
@@ -678,6 +772,16 @@ _CHATSERVER = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_LISTREQUEST,
     output_type=_LISTREPLY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Delete',
+    full_name='grpc.ChatServer.Delete',
+    index=6,
+    containing_service=None,
+    input_type=_DELETEREQUEST,
+    output_type=_DELETEREPLY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

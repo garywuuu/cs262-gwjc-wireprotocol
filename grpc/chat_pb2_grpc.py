@@ -44,6 +44,11 @@ class ChatServerStub(object):
                 request_serializer=chat__pb2.ListRequest.SerializeToString,
                 response_deserializer=chat__pb2.ListReply.FromString,
                 )
+        self.Delete = channel.unary_unary(
+                '/grpc.ChatServer/Delete',
+                request_serializer=chat__pb2.DeleteRequest.SerializeToString,
+                response_deserializer=chat__pb2.DeleteReply.FromString,
+                )
 
 
 class ChatServerServicer(object):
@@ -87,6 +92,12 @@ class ChatServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Delete(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChatServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -119,6 +130,11 @@ def add_ChatServerServicer_to_server(servicer, server):
                     servicer.List,
                     request_deserializer=chat__pb2.ListRequest.FromString,
                     response_serializer=chat__pb2.ListReply.SerializeToString,
+            ),
+            'Delete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Delete,
+                    request_deserializer=chat__pb2.DeleteRequest.FromString,
+                    response_serializer=chat__pb2.DeleteReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -229,5 +245,22 @@ class ChatServer(object):
         return grpc.experimental.unary_unary(request, target, '/grpc.ChatServer/List',
             chat__pb2.ListRequest.SerializeToString,
             chat__pb2.ListReply.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Delete(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/grpc.ChatServer/Delete',
+            chat__pb2.DeleteRequest.SerializeToString,
+            chat__pb2.DeleteReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

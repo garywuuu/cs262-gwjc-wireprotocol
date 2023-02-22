@@ -3,6 +3,7 @@ from concurrent import futures
 import grpc
 import time
 import queue
+import fnmatch
 
 import chat_pb2 as chat
 import chat_pb2_grpc as rpc
@@ -28,10 +29,8 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         # For every client a infinite loop starts (in gRPC's own managed thread)
         while True:
             # Check if there are any new messages
-            # if self.clients[recipient]
             if self.clients[recipient]["active"]:
                 if self.clients[recipient]["queue"].qsize() > 0: 
-                    # n = self.chats[lastindex] #make sure to pull from one specific list, not just global list
                     n = self.clients[recipient]["queue"].get(block=False)
                     yield n # look at yield = return
 
@@ -95,8 +94,11 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 n.error = "You are already logged in elsewhere."
                 print("Duplicate user login request from {}.".format(username))
             else:
+                queued = self.clients[username]["queue"]
+                self.clients[username]["queue"] = queue.SimpleQueue()
                 n.success = True
                 self.clients[username]["active"] = True
+                self.clients[username]["queue"] = queued
                 print("{} logged back in!".format(username))
                 # ADD FLUSHING QUEUED MESSAGES
         return n
@@ -120,14 +122,26 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         return n
 
     def List(self, request: chat.ListRequest, context):
+        query = request.query
         n = chat.ListReply()
         for user in self.clients.keys():
-            n.users.append(user)
+            if fnmatch.fnmatch(user, query+'*'):
+                n.users.append(user)
         print("Accounts listed.")
         n.success = True
         return n
 
-    # new functions for creating account, listing accounts, etc in addition to sendnote
+    def Delete(self, request: chat.DeleteRequest, context):
+        username = request.username
+        n = chat.DeleteReply()
+        if username in self.clients.keys():
+            self.clients.pop(username)
+            n.success = True
+            print("{} deleted successfully.".format(username))
+        else:
+            n.success = False
+            n.error = "No user found."
+        return n
 
 if __name__ == '__main__':
     port = 11912 

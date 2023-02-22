@@ -37,7 +37,7 @@ class Client:
             for connectReply in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
                 if connectReply.active:
                     print("R[{}] {}".format(connectReply.sender, connectReply.message)) 
-                else:
+                else: # need to return to terminate thread
                     return
 
     def send_message(self, message, recipient):
@@ -85,18 +85,29 @@ class Client:
         n.username = self.username
         reply = self.conn.Logout(n)
         if reply.success:
-            c.username = None
+            self.username = None
             print("Logout successful!")
 
-    def list(self):
-        # include wildcard later ***
+    def list(self, query):
         n = chat.ListRequest()
+        n.query = query
         reply = self.conn.List(n)
         if reply.success:
             for user in reply.users:
                 print(user)
         else:
             print("{}".format(reply.error))
+
+    def delete(self):
+        n = chat.DeleteRequest()
+        n.username = self.username
+        self.logout()
+        reply = self.conn.Delete(n)
+        if reply.success:
+            print("Account deleted.")
+        else:
+            print("{}".format(reply.error))
+
 
 if __name__ == '__main__':
     c = Client()
@@ -110,18 +121,25 @@ if __name__ == '__main__':
             else:
                 print("Invalid input.")
             c.thread()
-            print("Commands: \send to send a message, \logout to log out, \list to list accounts.")
+            print("Commands: \send to send a message, \logout to log out, \list to list accounts, \delete to delete your account.")
             while c.username is not None:
                 request = input('')
                 if request == "\logout":
                     c.logout()
                 elif request == "\list":
                     # include wildcard ***
-                    c.list()
+                    query = input("Query: ")
+                    c.list(query)
                 elif request == "\send":
                     recipient = input("Recipient: ")
                     message = input("Message: ")
                     c.send_message(message, recipient)
+                elif request == "\delete":
+                    confirm = input("Are you sure you want to delete your account? [y]: ")
+                    if confirm == "y":
+                        c.delete()
+                    else:
+                        print("Account deletion cancelled.")
                 else:
                     print("Please enter a valid command.")
     except KeyboardInterrupt:
