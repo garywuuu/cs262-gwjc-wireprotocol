@@ -1,3 +1,8 @@
-threading==3.11.2
-socket==22.2.1
-fnmatch==
+threading
+socket
+fnmatch
+google.protobuf
+grpc
+time
+queue
+concurrent
