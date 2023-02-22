@@ -1,8 +1,14 @@
 import socket
-import select
-import sys
+import threading 
+import fnmatch
+import _thread
 
-from _thread import *
+class Thread(threading.Thread):
+	def __init__(self, t, *args):
+		threading.Thread.__init__(self, target=t, args=args)
+		self.start()
+
+lock = _thread.allocate_lock()
 
 # Track all users who have created accounts and map usernames to IP info
 clients = {}
@@ -22,39 +28,38 @@ def threaded(user):
 	username = (user.recv(1024)).decode('UTF-8')
 
 	# Duplicate bool tracks whether multiple IP's are trying to use the same account/username
-	duplicate = False
-	if username in active_users:
-		duplicate = True
-		# While loop that insists on having only one IP access a given account at a time
-		while duplicate == True:
-			user.send((username + " is already logged in. Choose a different account: what's your username?").encode('UTF-8'))
-			# Get new username and continue only if it's not currently being used
-			username = (user.recv(1024)).decode('UTF-8')
-			if username not in active_users:
-				duplicate = False
+	duplicate = False 
+	with lock: 
+		if username in active_users:
+			duplicate = True
+			# While loop that insists on having only one IP access a given account at a time
+			while duplicate == True:
+				user.send((username + " is already logged in. Choose a different account: what's your username?").encode('UTF-8'))
+				# Get new username and continue only if it's not currently being used
+				username = (user.recv(1024)).decode('UTF-8')
+				if username not in active_users:
+					duplicate = False
 
 	# Logic for when a user is logging back into an account they previously made
-	if username in clients.keys():
-		# Update the IP information so that new messages are sent to the right place
-		clients[username] = user; active_users.append(username)
-		print(username + " added to server!")
-		# Nice Greeting
-		user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
-		# Since user is logging back in, we consider them active again
+		if username in clients.keys():
+			# Update the IP information so that new messages are sent to the right place
+			clients[username] = user; active_users.append(username)
+			print(username + " added to server!")
+			# Nice Greeting
+			user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
+			# Since user is logging back in, we consider them active again
 
 	# Feature 1: Creating an account with supplied username
-	else:
-		# Set IP info, initialized undelivered messages list for user, send a greeting, and add to active users. 
-		clients[username] = user; undelivered_messages[username] = []
-		print(username + " added to server!")
-		user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
-		active_users.append(username)
+		else:
+			# Set IP info, initialized undelivered messages list for user, send a greeting, and add to active users. 
+			clients[username] = user; undelivered_messages[username] = []
+			print(username + " added to server!")
+			user.send(("Welcome to Chat262, " + username +"!").encode('UTF-8'))
+			active_users.append(username)
 
 	# Deliver messages sent to user when they were offline. This is done only when first logging back in and not
 	# during following while loop since they will receive messages normally while signed in and active
 	deliver_undelivered(username)
-
-	
 	# While user is active, allow them to send/receive messages and call commands
 	while True:
 		try:
@@ -62,18 +67,20 @@ def threaded(user):
 
 			# Track for when user has disconnected from socket, meaning no longer active. Close connection
 			if not data:
-				active_users.remove(username); user.close()
-				print(username + " Disconnected")
-			
+				with lock:
+					active_users.remove(username); user.close()
+					print(username + " Disconnected")
+		
 			# Split up message into proper commands
 			# Commands are written by the user in the form of Operation|Recipient(optional)|Value
 			data_list = data.split('|'); task = data_list[0]
 			
 			# Abstracting away logic for each command with this function
-			check_operations(task, user, data_list, username)
+			with lock:
+				check_operations(task, user, data_list, username)
 
 		except:
-			# Catch errors
+		# Catch errors
 			user.close(); return False
 			
 
@@ -84,17 +91,13 @@ def check_operations(task, user, data_list, username):
 	if task == "list":
 		# Invalid Command
 		if len(data_list) != 2:
-			user.send(("Invalid Command - use list|all or list|active").encode('UTF-8'))
+			user.send(("Invalid Command - use list|all, list|active, or list|_").encode('UTF-8'))
 			return False
 
 		# Valid Command
 		else:
 			action = data_list[1]
-			if action == "all" or action == "active":
-				# call abstraction function
-				list_accounts(user, action); print("listed")
-			else:
-				user.send(("Invalid Command - use list|all or list|active").encode('UTF-8'))
+			list_accounts(user, action); print("listed")
 
 	# Feature 3: Active user can send a message to recipient
 	# Requirements: user must follow the structure "send|recipient|message"
@@ -140,7 +143,7 @@ def deliver_undelivered(username):
 
 # Logic for sending a message
 def sendmessage(message, username, receiver_username):
-	# Try sending message to recipeint
+	# Try sending message to recipient
 	try:
 		clients[receiver_username].send(message)
 		clients[username].send(("Message sent successfully!").encode("UTF-8"))
@@ -149,15 +152,16 @@ def sendmessage(message, username, receiver_username):
 		clients[receiver_username].close()
 
 
-
-
 # Logic for listing all or just active accounts
-def list_accounts(recipient, s):
+def list_accounts(recipient, s):	
 	if s == "active":
 		users = "Users: | "+''.join(str(n)+" | " for n in active_users)
 		recipient.send(users.encode('UTF-8'))
-	else:
+	elif s == "all":
 		users = "Users: | "+''.join(str(n)+" | " for n in clients.keys())
+		recipient.send(users.encode('UTF-8'))
+	else:
+		users = "Users: | "+''.join(str(n)+" | " for n in clients.keys() if fnmatch.fnmatch(n, s+'*'))
 		recipient.send(users.encode('UTF-8'))
 
 # Logic for removing user from network
@@ -186,8 +190,8 @@ def Main():
 		print (addr[0] + " connected")	
 		print('Connected to :', addr[0], ':', addr[1])
 		# Start new thread
-		start_new_thread(threaded, (user,))
+		_thread.start_new_thread(threaded, (user,))
 	server.close()
 
 if __name__=='__main__':
-    Main()
+	Main()
