@@ -53,10 +53,6 @@ class Client:
             n.message = message
             # print("S[{} -> {}] {}".format(n.sender, n.recipient, n.message)) 
             reply = self.conn.SendMessage(n)  # send to the server
-            # if reply.success:
-            #     pass
-            # else:
-            #     print("{}".format(reply.error))
             return reply
         else:
             print("Please enter a recipient and a message.")
@@ -68,9 +64,7 @@ class Client:
             reply = self.conn.Signup(n)
             if reply.success:
                 self.username = n.username
-            #     print("Signup successful!")
-            # else:
-            #     print("{}".format(reply.error))
+            self.thread()
             return reply
 
     def login(self, username):
@@ -80,9 +74,7 @@ class Client:
             reply = self.conn.Login(n)
             if reply.success:
                 self.username = n.username
-            #     print("Login successful!")
-            # else:
-            #     print("{}".format(reply.error))
+            self.thread()
             return reply
 
     def logout(self):
@@ -138,7 +130,6 @@ if __name__ == '__main__':
                 print("Invalid input.")
             # username set, can now start thread and take commands
             if c.username is not None:
-                c.thread()
                 print("Commands: \send, \logout, \list, \delete.")
             while c.username is not None:
                 request = input('')

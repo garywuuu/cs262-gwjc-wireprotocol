@@ -11,8 +11,6 @@ import chat_pb2_grpc as rpc
 class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf rpc file which is generated
 
     def __init__(self):
-        # List with all the chat history
-        self.chats = [] # need to edit so you have multiple chat lists
         self.clients = {}
 
     # The stream which will be used to send new messages to clients
@@ -59,7 +57,6 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 print("Sent: [{} -> {}] {}".format(sender,recipient,message))
             else: 
                 print("Queued: [{} -> {}] {}".format(sender,recipient,message))
-            # else:            
         return n
     
     def Signup(self, request: chat.SignupRequest, context):
