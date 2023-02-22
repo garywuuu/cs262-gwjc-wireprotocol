@@ -21,6 +21,7 @@ class Client:
         channel = grpc.insecure_channel(address + ':' + str(port))
         self.conn = rpc.ChatServerStub(channel)
 
+    # thread creation separate from instantiation. called when username set.
     def thread(self):
         if self.username is not None:
             # create new listening thread for when new message streams come in
@@ -32,12 +33,16 @@ class Client:
         when waiting for new messages
         """
         if self.username is not None:
+            # request message provides username
             n = chat.ConnectRequest()
             n.recipient = self.username
-            for connectReply in self.conn.ChatStream(n):  # this line will wait for new messages from the server!
+            # continuously  wait for new messages from the server!
+            for connectReply in self.conn.ChatStream(n):  
+                # active boolean checks to see if this is a disconnect request
                 if connectReply.active:
+                    # if normal active user message, we display it in chat
                     print("R[{}] {}".format(connectReply.sender, connectReply.message)) 
-                else: # need to return to terminate thread
+                else: # if disconnect request, then need to return to terminate thread
                     return
 
     def send_message(self, message, recipient):
@@ -45,8 +50,9 @@ class Client:
         This method is called when user enters something into the textbox
         """
         if recipient != '' and message != '':
-            n = chat.MessageRequest()  # create protobug message (called Note)
-            n.sender = self.username  # set the username
+            # construct message request
+            n = chat.MessageRequest() 
+            n.sender = self.username  
             n.recipient = recipient 
             n.message = message
             print("S[{} -> {}] {}".format(n.sender, n.recipient, n.message)) 
@@ -121,13 +127,12 @@ if __name__ == '__main__':
             else:
                 print("Invalid input.")
             c.thread()
-            print("Commands: \send to send a message, \logout to log out, \list to list accounts, \delete to delete your account.")
+            print("Commands: \send, \logout, \list, \delete.")
             while c.username is not None:
                 request = input('')
                 if request == "\logout":
                     c.logout()
                 elif request == "\list":
-                    # include wildcard ***
                     query = input("Query: ")
                     c.list(query)
                 elif request == "\send":
@@ -142,6 +147,6 @@ if __name__ == '__main__':
                         print("Account deletion cancelled.")
                 else:
                     print("Please enter a valid command.")
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: # catch the ctrl+c keyboard interrupt
         if c.username is not None:
             c.logout()

@@ -26,38 +26,34 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         :return:
         """
         recipient = request.recipient
-        # For every client a infinite loop starts (in gRPC's own managed thread)
+        # infinite loop starts for each client
         while True:
-            # Check if there are any new messages
+            # Check if recipient is active, if they have queued messages
             if self.clients[recipient]["active"]:
                 if self.clients[recipient]["queue"].qsize() > 0: 
                     n = self.clients[recipient]["queue"].get(block=False)
-                    yield n # look at yield = return
+                    yield n 
 
     def SendMessage(self, request: chat.MessageRequest, context):
-        """
-        This method is called when a clients sends a Note to the server.
-
-        :param request:
-        :param context:
-        :return:
-        """
+        # parse out request
         sender = request.sender
         recipient = request.recipient
         message = request.message
+        # create reply object
         n = chat.MessageReply()
+        # check if user exists
         if recipient not in self.clients.keys():
             n.success = False
             n.error = "Recipient not found."
         else:
-            # active user check
+            # regardless of whether user is active, we'll push to queue
             forward = chat.ConnectReply()
-            # if self.clients[recipient]["active"]:
-            forward.active = True
+            forward.active = True # not disconnecting
             forward.sender = sender
             forward.recipient = recipient
             forward.message = message
             self.clients[recipient]["queue"].put(forward)
+            # reply with overall sendMessage success + print debugging statements
             n.success = True
             if self.clients[recipient]["active"]:
                 print("Sent: [{} -> {}] {}".format(sender,recipient,message))
@@ -69,14 +65,17 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
     def Signup(self, request: chat.SignupRequest, context):
         n = chat.SignupReply()
         username = request.username
+        # if user already exists
         if username in self.clients.keys():
             n.success = False
             n.error = "Username already exists."
             print("Signup from {} failed: User already exists.".format(username))
         else:
-            n.success = True
+            # add new user dictionary to client dictionary
+            # initiate empty thread-safe queue for msgs
             self.clients[username] = {"active": True, "queue": queue.SimpleQueue()}
             print("New user {} has arrived!".format(username))
+            n.success = True
         return n
 
     def Login(self, request: chat.LoginRequest, context):
@@ -94,13 +93,14 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
                 n.error = "You are already logged in elsewhere."
                 print("Duplicate user login request from {}.".format(username))
             else:
+                # temporarily store user queue
                 queued = self.clients[username]["queue"]
                 self.clients[username]["queue"] = queue.SimpleQueue()
-                n.success = True
+                # once user activated, then re-queue undelivered messages
                 self.clients[username]["active"] = True
                 self.clients[username]["queue"] = queued
                 print("{} logged back in!".format(username))
-                # ADD FLUSHING QUEUED MESSAGES
+                n.success = True
         return n
 
     def Logout(self, request: chat.LogoutRequest, context):
@@ -125,6 +125,7 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         query = request.query
         n = chat.ListReply()
         for user in self.clients.keys():
+            # allow query wildcard search
             if fnmatch.fnmatch(user, query+'*'):
                 n.users.append(user)
         print("Accounts listed.")
@@ -135,9 +136,11 @@ class ChatServer(rpc.ChatServerServicer):  # inheriting here from the protobuf r
         username = request.username
         n = chat.DeleteReply()
         if username in self.clients.keys():
+            # thread-cutting and other functions handled in logout
+            # here, we just remove the user from the clients dictionary
             self.clients.pop(username)
-            n.success = True
             print("{} deleted successfully.".format(username))
+            n.success = True
         else:
             n.success = False
             n.error = "No user found."
